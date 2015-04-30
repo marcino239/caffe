@@ -209,6 +209,7 @@ class HDF5OutputLayer : public Layer<Dtype> {
   virtual void SaveBlobs();
 
   bool file_opened_;
+  int ds_iter_;
   std::string file_name_;
   hid_t file_id_;
   Blob<Dtype> data_blob_;
