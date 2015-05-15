@@ -5,7 +5,7 @@ test_iter: 18
 test_state: { stage: 'test-on-train' }
 test_iter: 90
 test_interval: 500
-base_lr: 0.005
+base_lr: 0.03
 lr_policy: "multistep"
 gamma: 0.2
 stepvalue: 1000
