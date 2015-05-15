@@ -1,0 +1,23 @@
+net: "examples/rsgps/train_val_pose_rnn.prototxt"
+solver_type: SGD
+test_state: { stage: 'test-on-val' }
+test_iter: 18
+test_state: { stage: 'test-on-train' }
+test_iter: 90
+test_interval: 500
+base_lr: 0.005
+lr_policy: "multistep"
+gamma: 0.2
+stepvalue: 1000
+stepvalue: 4000
+stepvalue: 6000
+stepvalue: 10000
+display: 100
+max_iter: 10000
+momentum: 0.9
+weight_decay: 0.002
+snapshot: 1000
+snapshot_prefix: "examples/rsgps/snapshot/rnn_var_"
+solver_mode: GPU
+
+
