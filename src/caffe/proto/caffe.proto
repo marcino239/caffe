@@ -728,6 +728,8 @@ message RNNParameter {
   optional string output_nonlinearity = 1 [default = "TanH"];
   // Nonlinearity on recurrent state (h_t)
   optional string recurrent_nonlinearity = 2 [default = "TanH"];
+  // Number of hidden units. 0 (default) means use num_output from RecurrentParameter
+  optional uint32 num_hidden = 3 [default = 0];
 }
 
 // Message that stores parameters used by ReLULayer

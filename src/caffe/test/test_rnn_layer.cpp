@@ -193,4 +193,44 @@ TYPED_TEST(RNNLayerTest, TestGradientNonZeroFlushBufferSize2) {
       this->blob_top_vec_, 0);
 }
 
+TYPED_TEST(RNNLayerTest, TestNumHiddenShape) {
+  // Check number of parameters with num_hidden setting.
+
+  typedef typename TypeParam::Dtype Dtype;
+  const int nout = 11;
+  const int nhid = 7;
+  const int nin = 6;
+
+  LayerParameter new_params(this->layer_param_);
+  new_params.mutable_rnn_param()->set_num_hidden(nhid);
+  new_params.mutable_recurrent_param()->set_num_output(nout);
+  RNNLayer<Dtype> layer(new_params);
+
+  layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
+  vector<int> expected_top_shape = this->blob_bottom_.shape();
+  expected_top_shape.resize(3);
+  expected_top_shape[2] = nout;
+  EXPECT_TRUE(this->blob_top_.shape() == expected_top_shape);
+
+  vector<shared_ptr<Blob<Dtype> > > params = layer.UnrolledNet()->params();
+  int total_count = 0;
+  for(typename vector<shared_ptr<Blob<Dtype> > >::iterator it=params.begin(); it!=params.end(); ++it){
+    shared_ptr<Blob<Dtype> > blob = (*it);
+    total_count += blob->count();
+  }
+  const int expected_count = (nin*nhid+nhid*nhid+nhid)+(nhid*nout+nout);
+  EXPECT_EQ(total_count, expected_count);
+}
+
+TYPED_TEST(RNNLayerTest, TestGradientWithNumHidden) {
+  typedef typename TypeParam::Dtype Dtype;
+  LayerParameter new_params(this->layer_param_);
+  new_params.mutable_rnn_param()->set_num_hidden(30);
+  RNNLayer<Dtype> layer(new_params);
+
+  GradientChecker<Dtype> checker(1e-2, 1e-3);
+  checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
+      this->blob_top_vec_, 0);
+}
+
 }  // namespace caffe
