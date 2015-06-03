@@ -29,6 +29,7 @@ void MLLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   for (int i = 0; i < dim; ++i) {
     Dtype mu = pred[i];
     Dtype sigma = pred[i+dim];
+    CHECK_GT(sigma, 0) << "Sigma is " << sigma << ", must be > 0";
     Dtype x = target[i];
     loss += 0.5 * (pow(mu-x,2)/pow(sigma,2) + log(sigma));
   }
