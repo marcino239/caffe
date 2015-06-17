@@ -59,10 +59,6 @@ void MLLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(MLLossLayer);
-#endif
-
 INSTANTIATE_CLASS(MLLossLayer);
 REGISTER_LAYER_CLASS(MLLoss);
 
