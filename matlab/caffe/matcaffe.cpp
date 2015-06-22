@@ -655,9 +655,10 @@ static void init_test_batch(MEX_ARGS) {
     const char* batch_size_string = mxArrayToString(prhs[1]);
     int batch_size = atoi(batch_size_string);
 
-    for (int i = 0; i < net_param.layers_size(); ++i) {
+    for (int i = 0; i < net_param.layer_size(); ++i) {
       const LayerParameter& layer_param = net_param.layer(i);
       if (layer_param.type() != "MemoryData") continue;
+      LOG(INFO) << "Setting batch size to " << batch_size;
       MemoryDataParameter* mem_param = net_param.mutable_layer(i)->mutable_memory_data_param();
       // Change batch size of all blobs in the memory data layer parameter
       for (int blob_i = 0; blob_i < mem_param->input_shapes_size(); ++blob_i) {
@@ -706,9 +707,10 @@ static void init_forwarda_batch(MEX_ARGS) {
     const char* batch_size_string = mxArrayToString(prhs[1]);
     int batch_size = atoi(batch_size_string);
 
-    for (int i = 0; i < net_param.layers_size(); ++i) {
+    for (int i = 0; i < net_param.layer_size(); ++i) {
       const LayerParameter& layer_param = net_param.layer(i);
       if (layer_param.type() != "MemoryData") continue;
+      LOG(INFO) << "Setting batch size to " << batch_size;
       MemoryDataParameter* mem_param = net_param.mutable_layer(i)->mutable_memory_data_param();
       // Change batch size of all blobs in the memory data layer parameter
       for (int blob_i = 0; blob_i < mem_param->input_shapes_size(); ++blob_i) {
