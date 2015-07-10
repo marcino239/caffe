@@ -1,0 +1,24 @@
+net: "examples/rsgps/train_val_pose_rnn_occlude.prototxt"
+solver_type: SGD
+test_state: { stage: 'test-on-val' }
+test_iter: 18
+test_state: { stage: 'test-on-train' }
+test_iter: 90
+test_interval: 500
+base_lr: 0.05
+lr_policy: "multistep"
+gamma: 0.2
+stepvalue: 1000
+stepvalue: 3000
+stepvalue: 5000
+stepvalue: 8000
+stepvalue: 12000
+display: 100
+max_iter: 12000
+momentum: 0.9
+weight_decay: 0.005
+snapshot: 1000
+snapshot_prefix: "examples/rsgps/snapshot/rnn_var_occ"
+solver_mode: GPU
+
+

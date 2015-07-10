@@ -4,23 +4,30 @@ layer {
   top: "joint_input"
   top: "action_input"
   top: "prec_input"
+  top: "clip"
   memory_data_param {
     input_shapes {
-      dim: 25 # maybe train with batch size of 50?
+      dim: 1000 # 10 sequences of 100
+      dim: 1
       dim: 26
       dim: 1
+    }
+    input_shapes {
+      dim: 1000
+      dim: 7
+      dim: 1
       dim: 1
     }
     input_shapes {
-      dim: 25
+      dim: 1000
       dim: 7
-      dim: 1
+      dim: 7
       dim: 1
     }
     input_shapes {
-      dim: 25
-      dim: 7
-      dim: 7
+      dim: 1000
+      dim: 1
+      dim: 1
       dim: 1
     }
   }
@@ -30,16 +37,52 @@ layer {
   name: "data_in"
   type: "MemoryData"
   top: "joint_input"
+  top: "clip"
   memory_data_param {
     input_shapes {
-      dim: 25
+      dim: 1
+      dim: 1
       dim: 26
+      dim: 1
+    }
+    input_shapes {
+      dim: 1
+      dim: 1
       dim: 1
       dim: 1
     }
   }
   include: {phase: TEST}
 }
+
+layer {
+  name: "reshapeclip"
+  type: "Reshape"
+  bottom: "clip"
+  top: "clip_reshape"
+  reshape_param {
+    shape {
+      dim: 1000
+      dim: 1
+    }
+  }
+  include: {phase: TRAIN}
+}
+
+layer {
+  name: "reshapeclip"
+  type: "Reshape"
+  bottom: "clip"
+  top: "clip_reshape"
+  reshape_param {
+    shape {
+      dim: 1
+      dim: 1
+    }
+  }
+  include: {phase: TEST}
+}
+
 layer {
   name: "fc1_both"
   type: "InnerProduct"
@@ -72,23 +115,45 @@ layer {
   top: "fc1_both"
 }
 layer {
-  name: "fc2_both"
-  type: "InnerProduct"
+  name: "reshapefc"
+  type: "Reshape"
   bottom: "fc1_both"
-  top: "fc2_both"
-  param {
-    lr_mult: 1
-    decay_mult: 1
+  top: "fc1_both_reshape"
+  reshape_param {
+    shape {
+      dim: 1000
+      dim: 1
+      dim: 40
+    }
   }
-  param {
-    lr_mult: 2
-    decay_mult: 0
+  include: {phase: TRAIN}
+}
+layer {
+  name: "reshapefc"
+  type: "Reshape"
+  bottom: "fc1_both"
+  top: "fc1_both_reshape"
+  reshape_param {
+    shape {
+      dim: 1
+      dim: 1
+      dim: 40
+    }
   }
-  inner_product_param {
-    num_output: 40
+  include: {phase: TEST}
+}
+layer {
+  name: "rnn1"
+  type: "RNN"
+  bottom: "fc1_both_reshape"
+  bottom: "clip_reshape"
+  top: "rnn1"
+  recurrent_param {
+    num_output: 20
     weight_filler {
-      type: "gaussian"
-      std: 0.01
+      type: "uniform"
+      min: -0.08
+      max: 0.08
     }
     bias_filler {
       type: "constant"
@@ -96,16 +161,11 @@ layer {
     }
   }
 }
-layer {
-  name: "relu3_both"
-  type: "ReLU"
-  bottom: "fc2_both"
-  top: "fc2_both"
-}
+
 layer {
   name: "fc3_both"
   type: "InnerProduct"
-  bottom: "fc2_both"
+  bottom: "rnn1"
   top: "nn_output"
   param {
     lr_mult: 1

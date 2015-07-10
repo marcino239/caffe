@@ -36,6 +36,8 @@ class RecurrentLayer : public Layer<Dtype> {
   virtual inline int MinBottomBlobs() const { return 2; }
   virtual inline int MaxBottomBlobs() const { return 3; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual inline shared_ptr<Net<Dtype> > UnrolledNet() const { return unrolled_net_; }
+
 
   virtual inline bool AllowForceBackward(const int bottom_index) const {
     // Can't propagate to sequence continuation indicators.
