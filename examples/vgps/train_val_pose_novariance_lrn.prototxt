@@ -134,7 +134,7 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 64
+    num_output: 32
     kernel_size: 5
     stride: 1
     weight_filler {
@@ -160,8 +160,6 @@ layer {
   top: "conv3"
   spatial_softmax_param {
     engine: CAFFE
-    temperature: 1.0
-    dimension: "spatial"
   }
 }
 layer {
