@@ -31,7 +31,7 @@ void MLLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     Dtype sigma = pred[i+dim];
     CHECK_GT(sigma, 0) << "Sigma is " << sigma << ", must be > 0";
     Dtype x = target[i];
-    loss += 0.5 * (pow(mu-x,2)/pow(sigma,2) + log(sigma));
+    loss += 0.5 * (pow(mu-x,2)/pow(sigma,2)) + log(sigma);
   }
 
   //Dtype loss = dot / bottom[0]->num() / Dtype(2);
@@ -54,7 +54,7 @@ void MLLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     Dtype x = target[i];
 
     diff[i] = (mu-x)/pow(sigma,2) * loss_weight;
-    diff[i+dim] = (-pow(mu-x,2)/pow(sigma,3) + 0.5/sigma) * loss_weight;
+    diff[i+dim] = (-pow(mu-x,2)/pow(sigma,3) + 1.0/sigma) * loss_weight;
   }
 
 }
