@@ -551,34 +551,6 @@ class SoftmaxOldLayer : public Layer<Dtype> {
   string dimension_;
 };
 
-#ifdef USE_CUDNN
-/**
- * @brief cuDNN implementation of SoftmaxLayer.
- *        Fallback to SoftmaxLayer for CPU mode.
- */
-template <typename Dtype>
-class CuDNNSoftmaxOldLayer : public SoftmaxOldLayer<Dtype> {
- public:
-  explicit CuDNNSoftmaxOldLayer(const LayerParameter& param)
-      : SoftmaxOldLayer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual ~CuDNNSoftmaxOldLayer();
-
- protected:
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-
-  cudnnHandle_t             handle_;
-  cudnnTensor4dDescriptor_t bottom_desc_;
-  cudnnTensor4dDescriptor_t top_desc_;
-};
-#endif
-
 /**
  * @brief Creates a "split" path in the network by copying the bottom Blob
  *        into multiple top Blob%s to be used by multiple consuming layers.
