@@ -166,7 +166,6 @@ void Solver<Dtype>::Step(int iters) {
   int average_loss = this->param_.average_loss();
   vector<Dtype> losses;
   Dtype smoothed_loss = 0;
-
   for (; iter_ < stop_iter; ++iter_) {
     // zero-init the params
     for (int i = 0; i < net_->params().size(); ++i) {
