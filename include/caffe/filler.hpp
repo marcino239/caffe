@@ -157,7 +157,50 @@ class XavierFiller : public Filler<Dtype> {
 };
 
 /** @brief Fills a Blob with values @f$ x \in {0,x,y} @f$
- * such that the output of the layer is the weighted average
+ * such that the dummy data values are equal to the pixel location.
+ */
+template <typename Dtype>
+class ExpectationDataFiller : public Filler<Dtype> {
+ public:
+  explicit ExpectationDataFiller(const FillerParameter& param)
+      : Filler<Dtype>(param) {}
+  virtual void Fill(Blob<Dtype>* blob) {
+    Dtype* data = blob->mutable_cpu_data();
+    DCHECK(blob->count());
+    int width = blob->shape(-1);
+    int height = blob->shape(-2);
+    const string& option = this->filler_param_.expectation_option();
+
+    // x means E[x], y means E[y]
+    if (option != "x" && option != "y") {
+      LOG(FATAL) << "Only x or y allowed as expectation data filler, not " << option;
+    }
+
+    // Iterate over all channels.
+    for (int c = 0; c < blob->count(0,blob->CanonicalAxisIndex(-2)); ++c) {
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          int offset = c*width*height + y*width + x;
+          Dtype* weight_ptr = data + offset;
+          if (option == "y") {
+            weight_ptr[0] = 2*(Dtype(y) / Dtype(height-1) - Dtype(0.5));
+          } else {
+            weight_ptr[0] = 2*(Dtype(x) / Dtype(width-1) - Dtype(0.5));
+          }
+        }
+      }
+    }
+
+    // We expect the filler to not be called very frequently, so we will
+    // just use a simple implementation
+    CHECK_EQ(this->filler_param_.sparse(), -1)
+         << "Sparsity not supported by this Filler.";
+  }
+};
+
+
+/** @brief Fills a Blob with values @f$ x \in {0,x,y} @f$
+ * such that the output of the inner product layer is the weighted average
  * x and y coordinate for each input channel.
  */
 template <typename Dtype>
@@ -198,7 +241,7 @@ class ExpectationFiller : public Filler<Dtype> {
               weight_ptr[0] = 2*(Dtype(y) / Dtype(height-1) - Dtype(0.5));
             } else if (option == "-x^2y^2") {
               weight_ptr[0] = - pow(2*(Dtype(x) / Dtype(width-1) - Dtype(0.5)), 2);
-            } else {
+            } else {  // "x" or "xy"
               weight_ptr[0] = 2*(Dtype(x) / Dtype(width-1) - Dtype(0.5));
             }
           } else if (k==1) {
@@ -244,6 +287,8 @@ Filler<Dtype>* GetFiller(const FillerParameter& param) {
     return new XavierFiller<Dtype>(param);
   } else if (type == "expectation") {
     return new ExpectationFiller<Dtype>(param);
+  } else if (type == "expectation_data") {
+    return new ExpectationDataFiller<Dtype>(param);
   } else {
     CHECK(false) << "Unknown filler name: " << param.type();
   }
