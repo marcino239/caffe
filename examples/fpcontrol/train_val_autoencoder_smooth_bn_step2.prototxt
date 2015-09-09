@@ -1,0 +1,530 @@
+name: "JointAndImageStateRegressionNet"
+layer {
+  name: "data"
+  type: "HDF5Data"
+  #top: "position"
+  top: "rgb_frames-1"
+  top: "rgb_frames+0"
+  top: "rgb_frames+1"
+  hdf5_data_param {
+    source: "/home/cfinn/code/caffe/examples/vgps/train_pose_smooth.txt"
+    batch_size: 25
+  }
+  include: { phase: TRAIN }
+}
+layer {
+  name: "data"
+  type: "HDF5Data"
+  #top: "position"
+  top: "rgb_frames-1"
+  top: "rgb_frames+0"
+  top: "rgb_frames+1"
+  hdf5_data_param {
+    source: "/home/cfinn/code/caffe/examples/vgps/val_pose_smooth.txt"
+    batch_size: 1 #5
+  }
+  include: {
+    phase: TEST
+    stage: 'test-on-val'
+  }
+}
+#layer {
+#  name: "data"
+#  type: "HDF5Data"
+#  #top: "position"
+#  top: "rgb_frames-1"
+#  top: "rgb_frames+0"
+#  top: "rgb_frames+1"
+#  hdf5_data_param {
+#    source: "/home/cfinn/code/caffe/examples/vgps/train_pose_smooth.txt"
+#    batch_size: 1 #5
+#  }
+#  include: {
+#    phase: TEST
+#    stage: 'test-on-train'
+#  }
+#}
+
+layer {
+  name: "concat+1"
+  type: "Concat"
+  bottom: "rgb_frames-1"
+  bottom: "rgb_frames+0"
+  bottom: "rgb_frames+1"
+  top: "rgb_frames"
+  concat_param {
+    axis: 0
+  }
+}
+# Image Processing Layers
+layer {
+  name: "conv1/7x7_s2"
+  type: "Convolution"
+  bottom: "rgb_frames"
+  top: "conv1"
+  param {
+    lr_mult: 0 #1
+    decay_mult: 0 #2
+  }
+  param {
+    lr_mult: 0 #2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 64
+    kernel_size: 7
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  bottom: "conv1"
+  top: "conv1_bn"
+  name: "conv1_bn"
+  type: "BatchNorm"
+  batch_norm_param {
+    use_global_stats : false
+    moving_average_fraction : 0.5
+  }
+  include: {phase:TRAIN}
+}
+layer {
+  bottom: "conv1"
+  top: "conv1_bn"
+  name: "conv1_bn"
+  type: "BatchNorm"
+  batch_norm_param {
+    use_global_stats : true
+    moving_average_fraction : 0.5
+  }
+  include: {phase:TEST}
+}
+layer {
+  name: "relu1"
+  type: "ReLU"
+  bottom: "conv1_bn"
+  top: "conv1_bn"
+}
+layer {
+  name: "conv2"
+  type: "Convolution"
+  bottom: "conv1_bn"
+  top: "conv2"
+  param {
+    lr_mult: 1
+    decay_mult: 2
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    kernel_size: 5
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  bottom: "conv2"
+  top: "conv2_bn"
+  name: "conv2_bn"
+  type: "BatchNorm"
+  batch_norm_param {
+    use_global_stats : false
+    moving_average_fraction : 0.5
+  }
+  include: {phase:TRAIN}
+}
+layer {
+  bottom: "conv2"
+  top: "conv2_bn"
+  name: "conv2_bn"
+  type: "BatchNorm"
+  batch_norm_param {
+    use_global_stats : true
+    moving_average_fraction : 0.5
+  }
+  include: {phase:TEST}
+}
+layer {
+  name: "relu2"
+  type: "ReLU"
+  bottom: "conv2_bn"
+  top: "conv2_bn"
+}
+layer {
+  name: "conv3"
+  type: "Convolution"
+  bottom: "conv2_bn"
+  top: "conv3"
+  param {
+    lr_mult: 1
+    decay_mult: 2
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 16
+    kernel_size: 5
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  bottom: "conv3"
+  top: "conv3_bn"
+  name: "conv3_bn"
+  type: "BatchNorm"
+  batch_norm_param {
+    use_global_stats : false
+    moving_average_fraction : 0.5
+  }
+  include: {phase:TRAIN}
+}
+layer {
+  bottom: "conv3"
+  top: "conv3_bn"
+  name: "conv3_bn"
+  type: "BatchNorm"
+  batch_norm_param {
+    use_global_stats : true
+    moving_average_fraction : 0.5
+  }
+  include: {phase:TEST}
+}
+layer {
+  bottom: "conv3_bn"
+  top: "conv3_bn"
+  name: "conv3bn_reshape"
+  type: "Reshape"
+  reshape_param {
+    shape {
+      dim: 75 # batch sizex3
+      dim: 1
+      dim: 1744 #872 # 109*8 # number of feature points
+      dim: 109
+    }
+  }
+  include: {phase:TRAIN}
+}
+layer {
+  bottom: "conv3_bn"
+  top: "conv3_bn"
+  name: "conv3bn_reshape"
+  type: "Reshape"
+  reshape_param {
+    shape {
+      dim: 3 #15 # batch size x3
+      dim: 1
+      dim: 1744 #872 # 109*8 # number of feature points
+      dim: 109
+    }
+  }
+  include: {phase:TEST}
+}
+layer {
+  name: "conv3b_bn"
+  type: "Convolution"
+  bottom: "conv3_bn"
+  top: "conv3b"
+  param {
+    lr_mult: 0 #0.001
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0 #0.002
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 1
+    kernel_size: 1
+    stride: 1
+    weight_filler {
+      type: "constant"
+      value: 10
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  bottom: "conv3b"
+  top: "conv3b"
+  name: "conv3b_reshape"
+  type: "Reshape"
+  reshape_param {
+    shape {
+      dim: 75 # batch size x3
+      dim: 16 # number of feature points
+      dim: 109
+      dim: 109
+    }
+  }
+  include: {phase:TRAIN}
+}
+layer {
+  bottom: "conv3b"
+  top: "conv3b"
+  name: "conv3b_reshape"
+  type: "Reshape"
+  reshape_param {
+    shape {
+      dim: 3 #15 # batch size x3
+      dim: 16 # number of feature points
+      dim: 109
+      dim: 109
+    }
+  }
+  include: {phase:TEST}
+}
+layer {
+  name: "relu3"
+  type: "ReLU"
+  bottom: "conv3b"
+  top: "conv3b_r"
+}
+layer {
+  name: "softmax"
+  type: "SpatialSoftmax"
+  bottom: "conv3b_r"
+  top: "conv3b_r"
+  spatial_softmax_param {
+    engine: CAFFE
+    temperature: 1.0
+  }
+}
+layer {
+  name: "fc_images"
+  type: "InnerProduct"
+  bottom: "conv3b_r"
+  top: "fp_xy_all"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 2  # dimensionality will actually be 2*num_channels
+    axis: -2
+    weight_filler {
+      type: "expectation"
+      expectation_option: "xy"
+      width: 109
+      height: 109
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  name: "slice"
+  type: "Slice"
+  bottom: "fp_xy_all"
+  top: "fp_xy-1"
+  top: "fp_xy"
+  top: "fp_xy+1"
+  slice_param {
+    axis: 0
+    slice_point: 25 # Needs to be equal to the batch size
+    slice_point: 50 # Needs to be equal to the batch size
+  }
+  include: {phase: TRAIN}
+}
+layer {
+  name: "slice"
+  type: "Slice"
+  bottom: "fp_xy_all"
+  top: "fp_xy-1"
+  top: "fp_xy"
+  top: "fp_xy+1"
+  slice_param {
+    axis: 0
+    slice_point: 1 #5 # Needs to be equal to the batch size
+    slice_point: 2 #10 # Needs to be equal to the batch size
+  }
+  include: {phase: TEST}
+}
+layer {
+  name: "slope1"
+  type: "Eltwise"
+  bottom: "fp_xy-1"
+  bottom: "fp_xy"
+  top: "fpdiff1"
+  eltwise_param {
+    operation: SUM
+    coeff: -1
+    coeff: 1
+  }
+}
+layer {
+  name: "slope1"
+  type: "Eltwise"
+  bottom: "fp_xy"
+  bottom: "fp_xy+1"
+  top: "fpdiff2"
+  eltwise_param {
+    operation: SUM
+    coeff: -1
+    coeff: 1
+  }
+}
+layer {
+  name: "smoothness_loss" # This is going to be output/loss #0 because it comes first in the prototxt
+  type: "EuclideanLoss"
+  bottom: "fpdiff1"
+  bottom: "fpdiff2"
+  top: "featurepoint_smoothness"  # Lower number means points are closer together/temporally smooth/slow
+  loss_weight: 1.0  # This will need to be tuned. # TODO - try larger number (Up to 0.1)
+}
+layer {
+  name: "fc1_a"
+  type: "InnerProduct"
+  bottom: "fp_xy"
+  top: "reconstruction"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 3600
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+# Construct reconstruction target.
+layer {
+  name: "downsample"
+  type: "Convolution"
+  bottom: "rgb_frames+0"
+  top: "downsampled"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 1
+    kernel_size: 4
+    stride: 4
+    weight_filler {
+      type: "constant"
+      value: 0.00008 # 1/16/3
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  name: "flatten_down"
+  type: "Flatten"
+  bottom: "downsampled"
+  top: "downsampled"
+}
+
+# Loss function for reconstruction
+layer {
+  name: "loss"
+  type: "EuclideanLoss"
+  bottom: "reconstruction"
+  bottom: "downsampled"
+  top: "euclidean_error"
+  loss_weight: 1
+}
+
+#layer {
+#  name: "imagemean"
+#  type: "InnerProduct"
+#  bottom: "reconstruction"
+#  top: "biases"
+#  param {
+#    lr_mult: 0
+#    decay_mult: 0
+#  }
+#  param {
+#    lr_mult: 1
+#    decay_mult: 0
+#  }
+#  inner_product_param {
+#    num_output: 900
+#    weight_filler {
+#      type: "constant"
+#      value: 0
+#    }
+#    bias_filler {
+#      type: "constant"
+#      value: 20
+#    }
+#  }
+#}
+#
+#layer {
+#  name: "addmean"
+#  type: "Eltwise"
+#  bottom: "biases"
+#  bottom: "reconstruction"
+#  top: "final_reconstruction"
+#}
+
+
+#layer {
+#  name: "output_lrn"
+#  type: "HDF5Output"
+#  hdf5_output_param {
+#    file_name: "autoencoder_result.h5"
+#  }
+#  bottom: "downsampled"
+#  bottom: "reconstruction"
+#  bottom: "rgb_frames"
+#  bottom: "fp_xy"
+#  include: {
+#    phase: TEST
+#  }
+#}
+

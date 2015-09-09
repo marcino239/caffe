@@ -1,0 +1,22 @@
+net: "/home/cfinn/fpcontrol/train_val_autoencoder_smooth_bn_step1.prototxt"
+solver_type: SGD
+average_loss: 50
+test_state: { stage: 'test-on-val' }
+test_iter: 490 #245 # 245 # 49 # normally 20
+#test_state: { stage: 'test-on-train' }
+#test_iter: 2205 #4312 #2400 #480 # normally 180
+test_interval: 500
+base_lr: 0.05
+lr_policy: "multistep"
+gamma: 0.1
+stepvalue: 2000 #2000
+stepvalue: 6000 #6000
+stepvalue: 9000 #10000
+display: 100
+max_iter: 1000 # 1000
+momentum: 0.9
+weight_decay: 0.005 # normally 0.005
+snapshot: 1000
+#snapshot_prefix: "/home/cfinn/fpcontrol/snapshot/trial_autoencoder_smooth1e-4_bn_correct_ab.01"
+snapshot_prefix: "/home/cfinn/fpcontrol/snapshot/training_step1"
+solver_mode: GPU
