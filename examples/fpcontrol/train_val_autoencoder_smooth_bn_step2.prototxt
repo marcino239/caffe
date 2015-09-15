@@ -252,11 +252,11 @@ layer {
   bottom: "conv3_bn"
   top: "conv3b"
   param {
-    lr_mult: 0 #0.001
+    lr_mult: 0.001
     decay_mult: 0
   }
   param {
-    lr_mult: 0 #0.002
+    lr_mult: 0.002
     decay_mult: 0
   }
   convolution_param {
