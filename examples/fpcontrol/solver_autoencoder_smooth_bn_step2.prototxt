@@ -1,4 +1,4 @@
-net: "/home/cfinn/fpcontrol/train_val_autoencoder_smooth_bn_step2.prototxt"
+net: "examples/fpcontrol/train_val_autoencoder_smooth_bn_step2.prototxt"
 solver_type: SGD
 average_loss: 50
 test_state: { stage: 'test-on-val' }
@@ -17,5 +17,5 @@ max_iter: 10000 # 1000
 momentum: 0.9
 weight_decay: 0.005 # normally 0.005
 snapshot: 1000
-snapshot_prefix: "/home/cfinn/fpcontrol/snapshot/trial_autoencoder16_smooth_ricebowl_09-08_bn"
+snapshot_prefix: "examples/fpcontrol/snapshot/trial_autoencoder16_smooth_ricebowl_09-08_bn"
 solver_mode: GPU

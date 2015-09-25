@@ -1,0 +1,2 @@
+caffe train -solver examples/fpcontrol/solver_autoencoder_smooth_bn_step1.prototxt -weights bvlc_googlenet.caffemodel
+caffe train -solver examples/fpcontrol/solver_autoencoder_smooth_bn_step2.prototxt -snapshot examples/fpcontrol/snapshot/training_step1_iter_1000.solverstate
