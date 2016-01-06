@@ -5,7 +5,7 @@
 
 namespace caffe { namespace db {
 
-const size_t LMDB_MAP_SIZE = 1099511627776;  // 1 TB
+const size_t LMDB_MAP_SIZE = 1 << 30;    //  tk1 limitation.   1099511627776;  // 1 TB
 
 void LevelDB::Open(const string& source, Mode mode) {
   leveldb::Options options;

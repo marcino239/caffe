@@ -11,7 +11,10 @@ namespace caffe {
 template <typename Dtype>
 void MemoryDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
      const vector<Blob<Dtype>*>& top) {
-  const MemoryDataParameter param = this->layer_param_.memory_data_param();
+  const MemoryDataParameter& param = this->layer_param_.memory_data_param();
+
+  CHECK_EQ( top.size(), param.input_shapes_size() ) << "inconsistent top size and input_shape size";
+
   batch_size_ = param.input_shapes(0).dim(0);
   for (int i = 0; i < param.input_shapes_size(); ++i) {
     top[i]->Reshape(param.input_shapes(i));
@@ -23,6 +26,7 @@ void MemoryDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
     size_.push_back(channels_[i] * height_[i] * width_[i]);
     // added_data_[i].Reshape(batch_size_, channels_[i], height_[i], width_[i]);
     data_.push_back(NULL);
+//    name_.push_back( this->layer_param_.top( i ) );
   }
 }
 
@@ -79,7 +83,10 @@ void MemoryDataLayer<Dtype>::AddMatVector(const vector<cv::Mat>& mat_vector,
 
 
 template <typename Dtype>
-void MemoryDataLayer<Dtype>::Reset(vector<Dtype*> data, int n) {
+void MemoryDataLayer<Dtype>::Reset(vector<Dtype*>& data, int n) {
+
+  CHECK_EQ( data.size(), this->layer_param_.memory_data_param().input_shapes_size() ) << "data size does not match proto size";
+
   CHECK_EQ(n % batch_size_, 0) << "n must be a multiple of batch size";
   for (int i = 0; i < data.size(); ++i) {
     CHECK(data[i]);
@@ -127,6 +134,7 @@ void MemoryDataLayer<Dtype>::set_batch_size(int new_size) {
 template <typename Dtype>
 void MemoryDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
+  LOG(WARNING) << "top size: " << top.size();
   for (int i = 0; i < top.size(); ++i) {
     CHECK(data_[i]) << "MemoryDataLayer needs to be initalized by calling Reset";
     top[i]->Reshape(batch_size_, channels_[i], height_[i], width_[i]);
